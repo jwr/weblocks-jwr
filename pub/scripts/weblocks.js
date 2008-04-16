@@ -4,10 +4,6 @@ function updateElementBody(element, newBody) {
     element.update(newBody);
 }
 
-function updateElement(element, newElement) {
-    element.replace(newElement);
-}
-
 function selectionEmpty() {
     if(document.getSelection) {
 	return document.getSelection() == "";
@@ -41,7 +37,7 @@ function stopPropagation(event) {
 Ajax.Responders.register({
   onCreate: function() {
 	    $('ajax-progress').innerHTML = "<img src='/pub/images/progress.gif'>";
-	},
+	}, 
   onComplete: function() {
 	    $('ajax-progress').innerHTML = "";
 	}
@@ -56,79 +52,61 @@ function onActionSuccess(transport) {
     } else {
         json = transport.responseText.evalJSON(true);
     }
-
-    // See if there are redirects
-    var redirect = json['redirect'];
-    if (redirect)
-    {
-	window.location.href = redirect;
-	return;
-    }
-
-    execJsonCalls(json['before-load']);
-
+    
     // Update dirty widgets
     var dirtyWidgets = json['widgets'];
     for(var i in dirtyWidgets) {
 	var widget = $(i);
 	if(widget) {
-            //console.log("updating widget %s", i);
-	    updateElement(widget, dirtyWidgets[i]);
+	    updateElementBody(widget, dirtyWidgets[i]);
 	}
     }
 
-    execJsonCalls(json['on-load']);
-}
-
-function execJsonCalls (calls) {
-    if(calls) {
-	calls.each(function(item)
+    // Perform a series of specialized operations
+    var onLoadCalls = json['on-load'];
+    if(onLoadCalls) {
+	onLoadCalls.each(function(item)
 			 {
 			     try {
-                                 item.evalScripts();
-			     } catch(e) {
-                                 //console.log("Error evaluating AJAX script %o: %s", item, e);
-                             }
+				 item.evalJSON().call();
+			     } catch(e) {}
 			 });
     }
 }
 
 function onActionFailure() {
-    alert('Oops, we could not complete your request because of an internal error.');
+    alert('Could not complete the request. This probably means your session has timed out. Please refresh the page and try again.');
 }
 
 function getActionUrl(actionCode, sessionString, isPure) {
-    var url = location.href.sub(/\?.*/, "") + '?' + sessionString + '&action=' + actionCode;
+    var url = location.href + '?' + sessionString + '&action=' + actionCode;
     if(isPure) {
 	url += '&pure=true';
     }
     return url;
 }
 
-function initiateActionWithArgs(actionCode, sessionString, args, method, url) {
-    if (!method) method = 'get';
-    if (!url) url = getActionUrl(actionCode, sessionString);
-    new Ajax.Request(url,
-                     {
-                         method: method,
-                         onSuccess: onActionSuccess,
-                         onFailure: onActionFailure,
-                         parameters: args
-                     });
-
-}
-
-/* convenience/compatibility function */
 function initiateAction(actionCode, sessionString) {
-    initiateActionWithArgs(actionCode, sessionString);
+    new Ajax.Request(getActionUrl(actionCode, sessionString),
+		     {
+			 method: 'get',
+			 onSuccess: onActionSuccess,
+			 onFailure: onActionFailure
+		     });
 }
 
 function initiateFormAction(actionCode, form, sessionString) {
     // Hidden "action" field should not be serialized on AJAX
     var serializedForm = form.serialize(true);
     delete(serializedForm['action']);
-
-    initiateActionWithArgs(actionCode, sessionString, serializedForm, form.method);
+    
+    new Ajax.Request(getActionUrl(actionCode, sessionString),
+		     {
+			 method: form.method,
+			 onSuccess: onActionSuccess,
+			 onFailure: onActionFailure,
+			 parameters: serializedForm
+		     });
 }
 
 function disableIrrelevantButtons(currentButton) {
@@ -156,10 +134,10 @@ if(!window.XMLHttpRequest) {
 	    tableRows.each(function(row) {
 		    Event.observe(row, 'mouseover', function() {
 			    row.addClassName('hover');
-			});
+			}); 
 		    Event.observe(row, 'mouseout', function() {
 			    row.removeClassName('hover');
-			});
+			}); 
 		});
 	});
 }
@@ -188,30 +166,10 @@ function replaceDropdownWithSuggest(ignoreWelcomeMsg, inputId, inputName, choice
 	inputBox += 'value="' + value +'"';
     }
     inputBox += '/>';
-
+    
     var suggestHTML = inputBox + '<div id="' + choicesId + '" class="suggest"></div>';
     $(inputId).replace(suggestHTML);
-
+    
     declareSuggest(inputId, choicesId, suggestOptions);
-}
-
-function include_css(css_file) {
-  var html_doc = document.getElementsByTagName('head').item(0);
-  var css = document.createElement('link');
-  css.setAttribute('rel', 'stylesheet');
-  css.setAttribute('type', 'text/css');
-  css.setAttribute('href', css_file);
-  html_doc.appendChild(css);
-  return false;
-}
-
-function include_dom(script_filename) {
-  var html_doc = document.getElementsByTagName('head').item(0);
-  var js = document.createElement('script');
-  js.setAttribute('language', 'javascript');
-  js.setAttribute('type', 'text/javascript');
-  js.setAttribute('src', script_filename);
-  html_doc.appendChild(js);
-  return false;
 }
 

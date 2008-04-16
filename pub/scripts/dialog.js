@@ -32,11 +32,6 @@ Position.EyeLevel = function(element, parent) {
 }
 
 function showDialog(title, body, cssClass) {
-    showDialog(title, body, cssClass, null);
-}
-
-
-function showDialog(title, body, cssClass, close) {
     // Find or create a graybox
     var graybox = $$('.graybox')[0];
     if(!graybox) {
@@ -48,30 +43,11 @@ function showDialog(title, body, cssClass, close) {
     // Create a dialog
     var dialogBody = Builder.node('div', { className : 'dialog-body' });
     dialogBody.innerHTML = body;
-
-    var titleTextCell = Builder.node('td', {className : 'title-text-cell'},   
-                                     [ Builder.node('h1',  {className : 'title-text'}, [title])]);
-
-    var titleButtonCell = null;
-    var titleRow = null;
-    if (close != null) {
-        var buttonDiv = Builder.node('div', { className : 'title-button' });
-        buttonDiv.innerHTML = close;
-        titleButtonCell = Builder.node('td', {className : 'title-button-cell'}, [ buttonDiv ]);
-
-        titleRow = Builder.node('tr', [ titleTextCell, titleButtonCell ]);
-    }
-    else {
-        titleRow = Builder.node('tr', [ titleTextCell ]);
-    }
-
-    var titleBar = Builder.node('table', {className : 'title-bar'}, [titleRow]);
-
     var dialog = Builder.node('div', { className : ('dialog ' + cssClass) },
 			      [ Builder.node('div', { className : 'dialog-extra-top-1' }),
 				Builder.node('div', { className : 'dialog-extra-top-2' }),
 				Builder.node('div', { className : 'dialog-extra-top-3' }),
-                                titleBar,
+				Builder.node('h1', [ Builder.node('span', title) ]),
 				dialogBody,
 				Builder.node('div', { className : 'dialog-extra-bottom-1' }),
 				Builder.node('div', { className : 'dialog-extra-bottom-2' }),

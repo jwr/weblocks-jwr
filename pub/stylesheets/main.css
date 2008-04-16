@@ -12,20 +12,15 @@ a
 
 .view
 {
-  background: #ecf8d7 url(/weblocks-common/pub/images/widget/top_background.png) repeat-x;
+  background: #ecf8d7 url(/pub/images/widget/top_background.png) repeat-x;
   margin-bottom: 1em;
   _height: 0; /* IE specific hasLayout fix */
-}
-
-.view h1, .view fieldset h1
-{
-  background-color: #ecf8d7;
 }
 
 .view .extra-top-1
 {
   height: 7px;
-  background: url(/weblocks-common/pub/images/widget/top_left.png) no-repeat top left;
+  background: url(/pub/images/widget/top_left.png) no-repeat top left;
   overflow: hidden;
 }
 
@@ -33,7 +28,7 @@ a
 {
   height: 7px;
   margin-top: -7px;
-  background: url(/weblocks-common/pub/images/widget/top_right.png) no-repeat top right;
+  background: url(/pub/images/widget/top_right.png) no-repeat top right;
   border-bottom: 1px solid #dbeac1;
   overflow: hidden;
 }
@@ -46,27 +41,25 @@ a
   padding-left: 0.4em;
 }
 
-.view h1, .view fieldset h1, .table table caption, div.empty p,
+.view h1, .view fieldset h1, .table table caption, .empty-table p,
 .view .empty-navigation, .view ul li, .view fieldset ul li,
 .view table thead tr th,
 .view fieldset div.submit, .view div.submit,
-.long-form fieldset .validation-errors-summary h2.error-count,
-.form fieldset .validation-errors-summary .non-field-validation-errors
+.long-form fieldset .validation-errors-summary h2.error-count
 {
   border-top: 1px solid #fcfef6;
 }
 
-.view h1, .view fieldset h1, .table table caption, div.empty p,
+.view h1, .view fieldset h1, .table table caption, .empty-table p,
 .view .empty-navigation, .view ul li, .view fieldset ul li,
 .view table thead tr th,
 .view fieldset div.submit, .view div.submit,
-.long-form fieldset .validation-errors-summary,
-.form fieldset .validation-errors-summary .non-field-validation-errors
+.long-form fieldset .validation-errors-summary
 {
   border-bottom: 1px solid #dbeac1;
 }
 
-.view h1, .view fieldset h1, .table table caption, div.empty p,
+.view h1, .view fieldset h1, .table table caption, .empty-table p,
 .view .empty-navigation, .view ul, .view fieldset ul, .table table,
 .view fieldset div.submit, .view div.submit,
 .long-form fieldset .validation-errors-summary h2.error-count
@@ -123,7 +116,7 @@ h1, h2
 .view .extra-bottom-1
 {
   height: 7px;
-  background: url(/weblocks-common/pub/images/widget/bottom_background.png) repeat-x top;
+  background: url(/pub/images/widget/bottom_background.png) repeat-x top;
   overflow: hidden;
 }
 
@@ -131,7 +124,7 @@ h1, h2
 {
   height: 7px;
   margin-top: -7px;
-  background: url(/weblocks-common/pub/images/widget/bottom_left.png) no-repeat top left;
+  background: url(/pub/images/widget/bottom_left.png) no-repeat top left;
   overflow: hidden;
 }
 
@@ -139,7 +132,7 @@ h1, h2
 {
   height: 7px;
   margin-top: -7px;
-  background: url(/weblocks-common/pub/images/widget/bottom_right.png) no-repeat top right;
+  background: url(/pub/images/widget/bottom_right.png) no-repeat top right;
   overflow: hidden;
 }
 
@@ -189,13 +182,13 @@ span.close-button
 
 span.close-button a
 {
-  /* background: url(/weblocks-common/pub/images/close.png) no-repeat top left; */
+  /* background: url(/pub/images/close.png) no-repeat top left; */
   padding-left: 1000em;
 }
 
 span.close-button a:hover
 {
-  /* background: url(/weblocks-common/pub/images/close_hl.png) no-repeat top left; */
+  /* background: url(/pub/images/close_hl.png) no-repeat top left; */
 }
 
 /* Total Items */
@@ -220,19 +213,5 @@ p.text
 .view ul li p.text
 {
   margin-left: 0.5em;
-}
-
-/* No elements */
-div.empty p
-{
-  padding-left: 0.5em;
-  margin: 0;
-}
-
-div.empty p span.caption
-{
-  color: #29364F;
-  font-weight: bold;
-  font-family: Garamond, New York, serif;
 }
 

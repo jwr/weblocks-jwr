@@ -4,36 +4,33 @@
   margin-top: 0;
 }
 
-form fieldset
+.form fieldset
 {
   border: none;
   padding: 0;
   margin: 0;
 }
 
-.form fieldset .validation-errors-summary .error-count,
-.form fieldset .validation-errors-summary .field-validation-errors
+.form fieldset .validation-errors-summary
 {
   display: none;
 }
 
 /* For long forms, change display of validation summary back */
-.long-form fieldset .validation-errors-summary .error-count,
-.long-form fieldset .validation-errors-summary .field-validation-errors
+.long-form fieldset .validation-errors-summary
 {
   display: block;
 }
 
-.form fieldset .validation-errors-summary h2.error-count,
-.form fieldset .validation-errors-summary ul li
+.long-form fieldset .validation-errors-summary h2.error-count
 {
   color: red;
 }
 
-.form fieldset .validation-errors-summary ul li,
-.long-form fieldset .validation-errors-summary .non-field-validation-errors
+.long-form fieldset .validation-errors-summary ul li
 {
   font-style: italic;
+  color: red;
   border-top: none;
   border-bottom: none;
 }
