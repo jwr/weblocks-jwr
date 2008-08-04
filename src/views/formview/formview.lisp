@@ -305,6 +305,7 @@ differently.
 (defmethod render-view-field-value (value (presentation input-presentation)
 				    field view widget obj
 				    &rest args &key intermediate-values &allow-other-keys)
+  (declare (special *presentation-dom-id*))
   (let ((attributized-slot-name (attributize-name (view-field-slot-name field))))
     (multiple-value-bind (intermediate-value intermediate-value-p)
 	(form-field-intermediate-value field intermediate-values)
@@ -313,7 +314,8 @@ differently.
 		  :value (if intermediate-value-p
 			     intermediate-value
 			     (apply #'print-view-field-value value presentation field view widget obj args))
-		  :maxlength (input-presentation-max-length presentation))))))
+		  :maxlength (input-presentation-max-length presentation)
+		  :id *presentation-dom-id*)))))
 
 (defmethod print-view-field-value ((value null) (presentation input-presentation)
 				   field view widget obj &rest args)
