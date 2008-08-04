@@ -175,6 +175,9 @@
 				       (:file "workflow"
 					      :depends-on ("call-answer")))
 			  :depends-on ("weblocks" "widgets" "request-handler" "snippets"))
+		 (:module yui
+			  :components ((:file "yui"))
+			  :depends-on ("weblocks" "snippets" widgets))
 		 (:file "server"
 			:depends-on ("weblocks" "debug-mode" utils store))
 		 (:file "request"
