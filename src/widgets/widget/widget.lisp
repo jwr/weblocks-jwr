@@ -90,19 +90,13 @@ inherits from 'widget' if no direct superclasses are provided."
 (defmethod (setf widget-name) (name (obj widget))
   (setf (dom-id obj) name))
 
-;;; Don't allow setting a parent for widget that already has one
-;;; (unless it's setting parent to nil)
-(defmethod (setf widget-parent) (val (obj widget))
-  (if (and val (widget-parent obj))
-      (error "Widget ~a already has a parent." obj)
-      (setf (slot-value obj 'parent) val)))
 
 ;;; Define widget-rendered-p for objects that don't derive from
 ;;; 'widget'
 (defmethod widget-rendered-p (obj)
   nil)
 
-(defmethod (setf widget-rendered-p) (val obj)
+(defmethod (setf widget-rendered-p) (obj val)
   nil)
 
 ;;; Define widget-parent for objects that don't derive from 'widget'
@@ -168,17 +162,17 @@ Another implementation allows rendering strings."))
 (defmethod widget-suffix-fn (obj)
   nil)
 
-(defmethod render-widget (obj &key inlinep)
+(defun render-widget (obj &key inlinep)
   "Renders a widget ('render-widget-body') wrapped in a
 header ('with-widget-header'). If 'inlinep' is true, renders the
 widget without a header.
 
 Additionally, calls 'dependencies' and adds the returned items to
-*page-public-dependencies*. This is later used by Weblocks to declare
+*page-dependencies*. This is later used by Weblocks to declare
 stylesheets and javascript links in the page header."
-  (declare (special *page-public-dependencies*))
-  (setf *page-public-dependencies*
-	(append *page-public-dependencies* (dependencies obj)))
+  (declare (special *page-dependencies*))
+  (setf *page-dependencies*
+	(append *page-dependencies* (dependencies obj)))
   (if inlinep
       (funcall #'render-widget-body obj)
       (apply #'with-widget-header obj #'render-widget-body
@@ -254,7 +248,7 @@ widget object, in which case it is simply returned.
 (defmethod find-widget-by-path* (path (root (eql nil)))
   nil)
 
-(defun find-widget-by-path (path &optional (root (webapp-session-value 'root-composite)))
+(defun find-widget-by-path (path &optional (root (session-value 'root-composite)))
   (find-widget-by-path* path root))
 
 (defmethod print-object ((obj widget) stream)

@@ -261,6 +261,12 @@
 	 ,con
 	 ,alt)))
 
+(defmacro aif (pred con alt)
+  `(let ((it ,pred))
+     (if it
+	 ,con
+	 ,alt)))
+
 (defun ensure-standard-object-index (store)
   (setf (elephant-stdobj-index store)
 	(aif (get-from-root 'stdobj-index :sc (elephant-controller store))
