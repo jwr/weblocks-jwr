@@ -13,6 +13,7 @@
   :description "A weblocks backend for elephant."
   :depends-on (:moptilities :metatilities :elephant :weblocks :weblocks-memory)
   :components ((:file "elephant")
-	       (:file "proxy")))
+	       (:file "proxy"))
+  :serial t)
 
 

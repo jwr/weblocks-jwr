@@ -175,12 +175,12 @@ type field-info."
 			   &key widget &allow-other-keys)
   "A helper function that finds the view and calls
 'render-object-view-impl'. Additionally, calls 'dependencies' and adds
-the returned items to *page-dependencies*. This is later used by
+the returned items to *page-public-dependencies*. This is later used by
 Weblocks to declare stylesheets and javascript links in the page
 header."
-  (declare (special *page-dependencies*))
-  (setf *page-dependencies*
-	(append *page-dependencies* (dependencies (find-view view))))
+  (declare (special *page-public-dependencies*))
+  (setf *page-public-dependencies*
+	(append *page-public-dependencies* (dependencies (find-view view))))
   (let (*form-submit-dependencies*)
     (declare (special *form-submit-dependencies*))
     ;; this is not the best place to introduce *form-submitp-dependencies*,
@@ -190,10 +190,11 @@ header."
     ;; view rendering --jwr
     (apply #'render-object-view-impl obj (find-view view) widget args)))
 
-(defun class-from-view (view &optional (class-name (gensym)))
+(defmethod class-from-view (view &optional (class-name (gensym)))
   "A helper function that generates a class object from a view. The
 view fields are enumerated and a CLOS class with slots based on field
-names is generated."
+names is generated.  This was made a method so the elephant backend
+can intercept class names and provide proxies instead."
   (make-class
    (mapcar (lambda (field-info)
 	     (view-field-slot-name (field-info-field field-info)))
