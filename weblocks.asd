@@ -40,10 +40,10 @@
 					   "request" "dependencies" store))
 		 (:module snippets
 			  :components ((:file "suggest")
+				       (:file "menu")
 				       (:file "isearch"
 					      :depends-on ("html-utils"))
-				       (:file "html-utils")
-				       (:file "menu"))
+				       (:file "html-utils"))
 			  :depends-on (utils "weblocks" "request" "server"
 				       "actions" "dom-object"))
 		 (:module linguistic
@@ -148,14 +148,14 @@
 					      :depends-on (widget "flash"))
 				       (:file "composite"
 					      :depends-on (widget))
-				       (:file "navigation"
-					      :depends-on ("composite" "selector" widget))
 				       (:file "dispatcher"
 					      :depends-on (widget))
 				       (:file "selector-mixin"
 					      :depends-on (widget))
 				       (:file "selector"
-					      :depends-on ("dispatcher" "selector-mixin" widget)))
+					      :depends-on ("dispatcher" "selector-mixin" widget))
+				       (:file "navigation"
+					      :depends-on ("composite" "selector" widget)))
 			  :depends-on (snippets views utils "dependencies" "actions" "server" "request"
 						"request-hooks" "dom-object" linguistic store))
 		 (:module control-flow

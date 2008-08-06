@@ -51,11 +51,11 @@ redirect on the client."
 	  (format nil "{\"redirect\":\"~A\"}" url)))
       (hunchentoot:redirect url)))
 
- (defun compose-uri-tokens-to-url (tokens)
-   "Encodes and concatenates uri tokens into a url string. Note that
- the string will not contain separator slashes at the beginning or
- end."
-   (string-downcase 
-    (apply #'concatenate 'string
- 	  (intersperse
- 	   (mapcar #'url-encode (ensure-list tokens)) "/"))))
+(defun compose-uri-tokens-to-url (tokens)
+  "Encodes and concatenates uri tokens into a url string. Note that
+the string will not contain separator slashes at the beginning or
+end."
+  (string-downcase 
+   (apply #'concatenate 'string
+          (intersperse
+           (mapcar #'url-encode (ensure-list tokens)) "/"))))
