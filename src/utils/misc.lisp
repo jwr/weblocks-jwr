@@ -13,7 +13,7 @@
 	  remove-parameter-from-uri asdf-system-directory
 	  make-isearch-regex hash-keys object-class-name
 	  append-custom-fields find-slot-dsd find-slot-esd drop-last
-	  function-designator-p))
+	  function-designator-p list-starts-with safe-subseq))
 
 (defun gen-id (&optional (prefix ""))
   "Generates an ID unique accross the session. The generated ID can be
@@ -204,14 +204,24 @@ instead of 'delimeter'.
         do (setf i (remove-keyword-parameter i argument))
         finally (return i)))
 
-(defun tokenize-uri (uri)
+(defun tokenize-uri (uri &optional (remove-app-prefix t) app)
   "Tokenizes a URI into a list of elements.
 
 ex:
 \(tokenize-uri \"/hello/world/blah\\test\\hala/world?hello=5;blah=7\"
 => (\"hello\" \"world\" \"blah\" \"test\" \"hala\" \"world\")"
-  (remove-if (curry #'string-equal "")
-	     (cl-ppcre:split "[/\\\\]" (cl-ppcre:regex-replace "\\?.*" uri ""))))
+  (loop for token in (cl-ppcre:split "[/\\\\]" 
+				     (cl-ppcre:regex-replace "\\?.*" 
+							     (if remove-app-prefix
+								 (subseq uri (length
+									      (webapp-prefix
+									       (if app
+										   app
+										   (current-webapp)))))
+								 uri)
+							     ""))
+     unless (string-equal "" token)
+     collect (url-decode token)))
 
 (defun public-file-relative-path (type filename)
   "Constructs a relative path to a public file from the \"/pub\" directory.
@@ -254,7 +264,7 @@ Ex (when URI is http://blah.com/foo/bar?x=1&y=2):
 \(request-uri-path)
 => \"/foo/bar\""
   (declare (special *uri-tokens*))
-  (apply #'concatenate 'string "/" (intersperse *uri-tokens* "/")))
+  (identity (cl-ppcre:regex-replace "/?(?:\\?.*)$" (request-uri) "")))
 
 (defun string-remove-left (str prefix &key ignore-case-p)
   "If string 'str' starts with 'prefix', remove 'prefix' from the
@@ -410,4 +420,21 @@ in 'class'."
       (and (symbolp obj)
 	   (not (null (fboundp obj))))
       (typep obj 'funcallable-standard-object)))
+
+(defun list-starts-with (list elements &key (test 'eq))
+  "Determines if a list starts with the given elements."
+  (let ((elements (ensure-list elements)))
+    (if elements
+	(when (funcall test (car list) (car elements))
+	  (list-starts-with (cdr list) (cdr elements)))
+	t)))
+
+(defun safe-subseq (sequence start &optional end)
+  "A safe alternative to subseq that automatically adjust indices."
+  (let ((length (length sequence)))
+    (when (> start length)
+      (setf start length))
+    (when (and end (> end length))
+      (setf end length))
+    (subseq sequence start end)))
 

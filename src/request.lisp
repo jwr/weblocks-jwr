@@ -2,7 +2,8 @@
 (in-package :weblocks)
 
 (export '(*json-content-type refresh-request-p initial-request-p
-	  ajax-request-p pure-request-p redirect))
+	  ajax-request-p pure-request-p redirect
+	  compose-uri-tokens-to-url))
 
 (defparameter *json-content-type* "application/json; charset=utf-8"
   "A content type sent to the client to identify json data.")
@@ -14,11 +15,11 @@ if there is an action involved (even if the user hits refresh)."
   (declare (special *uri-tokens*))
   (and
    (null (get-request-action))
-   (equalp *uri-tokens* (session-value 'last-request-uri))))
+   (equalp *uri-tokens* (webapp-session-value 'last-request-uri))))
 
 (defun initial-request-p ()
   "Returns true if the request is the first request for the session."
-  (equalp (session-value 'last-request-uri) :none))
+  (equalp (webapp-session-value 'last-request-uri) :none))
 
 (defun ajax-request-p ()
   "Detects if the current request was initiated via AJAX by looking
@@ -49,3 +50,12 @@ redirect on the client."
 	(throw 'handler-done
 	  (format nil "{\"redirect\":\"~A\"}" url)))
       (hunchentoot:redirect url)))
+
+(defun compose-uri-tokens-to-url (tokens)
+  "Encodes and concatenates uri tokens into a url string. Note that
+the string will not contain separator slashes at the beginning or
+end."
+  (string-downcase 
+   (apply #'concatenate 'string
+          (intersperse
+           (mapcar #'url-encode (ensure-list tokens)) "/"))))

@@ -37,13 +37,15 @@
 		 (:file "request-handler"
 			:depends-on (utils "weblocks" "page-template" "debug-mode"
 					   "actions" "request-hooks" "application"
-					   "request" store))
+					   "request" "dependencies" store))
 		 (:module snippets
 			  :components ((:file "suggest")
+				       (:file "menu")
 				       (:file "isearch"
 					      :depends-on ("html-utils"))
 				       (:file "html-utils"))
-			  :depends-on ("weblocks" "request" "server" "actions" "dom-object"))
+			  :depends-on (utils "weblocks" "request" "server"
+				       "actions" "dom-object"))
 		 (:module linguistic
 			  :components ((:file "grammar"))
 			  :depends-on ("weblocks" utils))
@@ -146,8 +148,14 @@
 					      :depends-on (widget "flash"))
 				       (:file "composite"
 					      :depends-on (widget))
+				       (:file "dispatcher"
+					      :depends-on (widget))
+				       (:file "selector-mixin"
+					      :depends-on (widget))
+				       (:file "selector"
+					      :depends-on ("dispatcher" "selector-mixin" widget))
 				       (:file "navigation"
-					      :depends-on ("composite" widget)))
+					      :depends-on ("composite" "selector" widget)))
 			  :depends-on (snippets views utils "dependencies" "actions" "server" "request"
 						"request-hooks" "dom-object" linguistic store))
 		 (:module control-flow

@@ -249,7 +249,7 @@
 (deftest mark-dirty-5
     (with-request :get nil
       (progv '(*weblocks-output-stream*) (list (make-string-output-stream))
-	(setf (session-value 'weblocks::root-composite) (create-site-layout))	
+	(setf (root-composite) (create-site-layout))	
 	(let* ((weblocks::*dirty-widgets* nil)
 	       (path '((root-inner test-nav-1 test2 test2-leaf)))
 	       (w (make-instance 'composite :name "test"
@@ -323,7 +323,7 @@
 
 (deftest find-widget-by-path-3
     (with-request :get nil
-      (setf (session-value 'weblocks::root-composite) (create-site-layout))
+      (setf (root-composite) (create-site-layout))
       (let ((res (find-widget-by-path '(root-inner test-nav-1 test2 test2-leaf))))
 	(values (widget-name res)
 		(type-of res))))
@@ -334,6 +334,16 @@
       (setf (session-value 'weblocks::root-composite) (create-site-layout))
       (find-widget-by-path '(doesnt exist)))
   nil)
+
+(deftest find-widget-by-path-5
+    (with-request :get nil :uri "/test2"
+      (setf (root-composite) (create-site-layout))
+      (catch 'handler-done
+	(handle-client-request (weblocks::current-webapp)))
+      (let ((test2 (find-widget-by-path '(root-inner test-nav-1 test2))))
+	(values (widget-name test2)
+		(type-of test2))))
+  "test2" composite)
 
 ;;; test customized widget printing
 (deftest widget-printing-1
@@ -346,15 +356,15 @@
       (format nil "~s" (make-instance 'weblocks::dataform :name 'users)))
   "#<DATAFORM USERS>")
 
-;; note that navigation is a special case which DOES NOT autogenerate ids
+;; navigation is no longer a special case which DOES NOT autogenerate ids
 (deftest widget-printing-3
     (with-request :get nil
       (progv '(*package*) (list (find-package :weblocks-test))
 	(format nil "~s" (make-instance 'weblocks::navigation))))
-  "#<NAVIGATION NIL>")
+  "#<NAVIGATION \"id-123\">")
 
 (deftest widget-printing-4
     (with-request :get nil
       (progv '(*package*) (list (find-package :weblocks-test))
-	(format nil "~s" (make-instance 'weblocks::navigation :dom-id "id-123"))))
-  "#<NAVIGATION \"id-123\">")
+	(format nil "~s" (make-instance 'weblocks::navigation :dom-id "id-234"))))
+  "#<NAVIGATION \"id-234\">")
