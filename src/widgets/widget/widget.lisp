@@ -163,25 +163,25 @@ Another implementation allows rendering strings."))
 (defmethod widget-suffix-fn (obj)
   nil)
 
-(defun render-widget (obj &key inlinep &allow-other-keys)
+(defgeneric render-widget (obj &key inlinep &allow-other-keys)
+  (:documentation
   "Renders a widget ('render-widget-body') wrapped in a
 header ('with-widget-header'). If 'inlinep' is true, renders the
 widget without a header.
 
 Additionally, calls 'dependencies' and adds the returned items to
 *page-dependencies*. This is later used by Weblocks to declare
-stylesheets and javascript links in the page header."
+stylesheets and javascript links in the page header."))
+
+(defmethod render-widget (obj &key inlinep &allow-other-keys)
   (declare (special *page-dependencies*))
   (if (ajax-request-p)
     (dolist (dep (dependencies obj))
-      (let ((file (puri:uri (merge-pathnames dep
-					     (make-pathname :directory '(:absolute "pub"))))))
-	(send-script (cond
-		       ((equalp (pathname-type dep) "js")
-			(format nil "include_dom('~A');" file))
-		       ((equalp (pathname-type dep) "css")
-			(format nil "include_css('~A');" file)))
-		     :before-load)))
+      (send-script
+	(ps* `(,(typecase dep
+                  (stylesheet-dependency 'include_css)
+                  (script-dependency 'include_dom))
+               ,(make-webapp-uri (puri:render-uri (dependency-url dep) nil))))))
     (setf *page-dependencies*
 	  (append *page-dependencies* (dependencies obj))))
   (if inlinep
