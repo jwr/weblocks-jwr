@@ -74,7 +74,7 @@ The function serves all started applications"
 	 (log-message :debug "Dispatching to public file")
 	 (return-from weblocks-dispatcher
 	   (funcall (create-folder-dispatcher-and-handler 
-		     (concatenate 'string app-pub-prefix)
+		     (maybe-add-trailing-slash app-pub-prefix)
 		     (compute-webapp-public-files-path app))
 		    request)))
 	((list-starts-with (tokenize-uri script-name nil)
@@ -100,24 +100,7 @@ The function serves all started applications"
 ;; install weblocks-dispatcher
 
 (eval-when (:load-toplevel)
-  (progn
-    (let ((pos (position 'weblocks-dispatcher *dispatch-table*))
-	  (public-files-path (compute-public-files-path :weblocks)))
-      (if pos
-	  (rplaca (nthcdr (1- pos) *dispatch-table*)
-		  #'(lambda (request)
-		      (funcall (create-folder-dispatcher-and-handler "/pub/" public-files-path)
-			       request)))
-	  (setf *dispatch-table*
-		(append 
-		 (list
-		  ;;; Default CSS files use /pub, ideally we shouldn't
-		  ;;; expose this through weblocks directly.
-		  #'(lambda (request)
-		      (funcall (create-folder-dispatcher-and-handler "/pub/" public-files-path)
-			       request))
-		  'weblocks-dispatcher)
-		 *dispatch-table*))))))
+  (push 'weblocks-dispatcher *dispatch-table* ))
 
 (defun session-name-string-pair ()
   "Returns a session name and string suitable for URL rewriting. This

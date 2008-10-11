@@ -204,24 +204,24 @@ instead of 'delimeter'.
         do (setf i (remove-keyword-parameter i argument))
         finally (return i)))
 
-(defun tokenize-uri (uri &optional (remove-app-prefix t) app)
-  "Tokenizes a URI into a list of elements.
+(defun tokenize-uri (uri &optional (remove-app-prefix t) (app (when remove-app-prefix
+                                                                (current-webapp))))
+  "Tokenizes an URI into a list of elements.
 
 ex:
 \(tokenize-uri \"/hello/world/blah\\test\\hala/world?hello=5;blah=7\"
 => (\"hello\" \"world\" \"blah\" \"test\" \"hala\" \"world\")"
   (loop for token in (cl-ppcre:split "[/\\\\]" 
-				     (cl-ppcre:regex-replace "\\?.*" 
+				     (cl-ppcre:regex-replace "\\?.*"
 							     (if remove-app-prefix
-								 (subseq uri (length
-									      (webapp-prefix
-									       (if app
-										   app
-										   (current-webapp)))))
+								 (subseq uri
+                                                                         (length
+                                                                           (webapp-prefix
+                                                                             app)))
 								 uri)
 							     ""))
      unless (string-equal "" token)
-     collect (url-decode token)))
+       collect (url-decode token)))
 
 (defun public-file-relative-path (type filename)
   "Constructs a relative path to a public file from the \"/pub\" directory.
@@ -448,3 +448,39 @@ in 'class'."
   "`lambda', but accept and ignore any arguments."
   (with-unique-names (args)
     `(lambda (&rest ,args) (declare (ignore ,args)) . ,forms)))
+
+;;; working with those pesky slashes
+(defun remove-spurious-slashes (str)
+  "Condense multiple consecutively occuring slashes in STR
+into a single slash.
+
+ex:
+
+(remove-spurious-slashes \"/ab/////c///\")
+=> \"/ab/c/\""
+  (with-output-to-string (s)
+    (loop for c across str
+          with last-char
+          unless (and (eql c #\/) (eql last-char #\/))
+            do (princ c s)
+          do (setf last-char c))
+    s))
+
+(defun strip-trailing-slashes (str)
+  "Relentlessly strip all trailing slashes from STR.
+A string solely consisting of slashes is no special case.
+
+Returns the number of stripped slashes as second value."
+  ;; we just count them and return an appropriate subsequence
+  (let ((n 0))
+    (loop for c across (reverse str)
+          while (eql c #\/)
+          do (incf n))
+    (values (subseq str 0 (- (length str) n)) n)))
+
+(defun maybe-add-trailing-slash (s)
+  "Supply a trailing slash if needed."
+  (if (equal (subseq s (1- (length s))) "/")
+    s
+    (concatenate 'string s "/")))
+
