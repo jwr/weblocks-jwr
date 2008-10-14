@@ -86,10 +86,9 @@ its subclasses."))
 		    *presentation-dom-id*
 		    *form-submit-dependencies*))
   (let ((widget-variable (ps-gensym "$yui_widget")))
-    (push (json-function (create-and-configure-editor-script presentation
-							   widget-variable
-							   *presentation-dom-id*))
-	*on-ajax-complete-scripts*)
+    (send-script (create-and-configure-editor-script presentation
+						     widget-variable
+						     *presentation-dom-id*))
     (push (make-instance 'javascript-code-dependency
 			 :code (ps* `(.save-H-T-M-L ,widget-variable)))
 	  *form-submit-dependencies*)))
