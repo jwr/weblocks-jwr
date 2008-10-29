@@ -115,7 +115,10 @@ its subclasses."))
   ;; we don't actually use this list for rendering, but it is necessary
   ;; for a lot of things, for example weblocks can't find navigation
   ;; widgets without it --jwr
-  (setf (composite-widgets obj) (list (yui-grid-page-header obj)
+
+  ;; Updated 20081025: this shouldn't be necessary anymore with the new
+  ;; navigation system --jwr
+  #-(and)(setf (composite-widgets obj) (list (yui-grid-page-header obj)
 				      (yui-grid-page-primary-body obj)
 				      (yui-grid-page-secondary-body obj)
 				      (yui-grid-page-footer obj)))
