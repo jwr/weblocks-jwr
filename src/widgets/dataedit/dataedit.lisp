@@ -100,12 +100,10 @@ documentation for more details.")
   editing functionality."))
 
 ;;; We need to set up the value of dataseq-on-drilldown
-(defmethod initialize-instance :after
-    ((obj dataedit-mixin) &key (on-drilldown nil on-drilldown?) &allow-other-keys)
-  (declare (ignore on-drilldown))
-  (unless on-drilldown?
-    (setf (dataseq-on-drilldown obj)
-	  (cons 'modify #'dataedit-drilldown-action))))
+(defmethod initialize-instance :after ((obj dataedit-mixin) &rest initargs &key &allow-other-keys)
+  (declare (ignore initargs))
+  (setf (dataseq-on-drilldown obj)
+	(cons 'modify #'dataedit-drilldown-action)))
 
 ;;; Drilldown
 (defgeneric dataedit-create-drilldown-widget (obj item)
@@ -165,7 +163,7 @@ in order to reset the state after the item widget has done its job."
 	(dataedit-create-new-item-widget obj))
   (setf (dataedit-ui-state obj) :add))
 
-(defun dataedit-update-operations (obj &key
+(defmethod dataedit-update-operations (obj &key
 				   (delete-fn #'dataedit-delete-items-flow)
 				   (add-fn #'dataedit-add-items-flow))
   "Should be used to update operations the widget supports.
