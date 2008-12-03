@@ -18,7 +18,7 @@ CONTAINER-ID is provided, it is used as the basis of DOM IDs for the
 menu and each menu item generated with `unattributized-name'."
   (declare (special *current-navigation-url*))
   (with-html
-    (:div :class "view menu"
+    (:div :class "rendered-menu"
 	  :id (unattributized-name container-id 'menu)
 	  (with-extra-tags
 	    (when header
