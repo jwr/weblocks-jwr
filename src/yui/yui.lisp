@@ -118,7 +118,7 @@ its subclasses."))
 
   ;; Updated 20081025: this shouldn't be necessary anymore with the new
   ;; navigation system --jwr
-  #-(and)(setf (composite-widgets obj) (list (yui-grid-page-header obj)
+  (setf (composite-widgets obj) (list (yui-grid-page-header obj)
 				      (yui-grid-page-primary-body obj)
 				      (yui-grid-page-secondary-body obj)
 				      (yui-grid-page-footer obj)))
