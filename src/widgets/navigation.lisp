@@ -29,7 +29,7 @@
 (defmethod render-widget-body ((obj navigation) &rest args)
   (with-html 
     (:div :class "navigation-body"
-	  (call-next-method)))
+	  (render-widget (car (container-children obj)))))
   (apply #'render-navigation-menu obj args))
 
 (defmethod per-class-dependencies append ((obj navigation))
