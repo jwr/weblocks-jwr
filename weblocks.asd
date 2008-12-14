@@ -157,13 +157,9 @@
 				       (:file "container"
 					      :depends-on (widget))
 				       (:file "composite"
-					      :depends-on (container))
-				       (:file "dispatcher"
-					      :depends-on (container))
-				       (:file "selector-mixin"
-					      :depends-on (widget))
+					      :depends-on ("container"))
 				       (:file "selector"
-					      :depends-on ("dispatcher" "selector-mixin" widget))
+					      :depends-on ("container" widget))
 				       (:file "navigation"
 					      :depends-on ("composite" "selector" widget)))
 			  :depends-on (snippets views utils "dependencies" "actions" "server" "request"

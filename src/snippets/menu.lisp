@@ -7,14 +7,13 @@
   "A default message shown by 'render-menu' if no entries are
   available.")
 
-(defun render-menu (options &key selected-pane header (container-id (gen-id))
+(defun render-menu (options &key (selected-pane "") header (container-id (gen-id))
 		    (empty-message *menu-empty-message*))
   "Renders a menu snippet based on given options and selected
 option. An option may be a dotted pair of a label and URL to link to,
 or a name (which will be converted to a label and a URL via
-humanize-name and attributize-name, respectively). The selected-uri
-will be compared to an option's URL tokens via equalp. If the selected
-option isn't specified, first option is rendered as selected.  If
+humanize-name and attributize-name, respectively). The selected-pane
+will be compared to an option's URL tokens via equalp.  If
 CONTAINER-ID is provided, it is used as the basis of DOM IDs for the
 menu and each menu item generated with `unattributized-name'."
   (declare (special *current-navigation-url*))
@@ -34,11 +33,9 @@ menu and each menu item generated with `unattributized-name'."
 			    (setf option
 				  (cons (humanize-name option)
 					(attributize-name option))))
-			  (unless selected-pane
-			    (setf selected-pane (car option)))
 			  (let* ((label (car option))
-				 (target (cdr option))
-				 (pane-selected-p (equalp (attributize-name (car option)) selected-pane))
+				 (target (or (cdr option) ""))
+				 (pane-selected-p (equalp target selected-pane))
 				 (pane-class (when pane-selected-p
 					       "selected-item")))
 			    (htm
