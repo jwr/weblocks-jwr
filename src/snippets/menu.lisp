@@ -7,7 +7,7 @@
   "A default message shown by 'render-menu' if no entries are
   available.")
 
-(defun render-menu (options &key selected-pane header (container-id (gen-id))
+(defun render-menu (options &key selected-pane header (container-id (gen-id)) (base "")
 		    (empty-message *menu-empty-message*))
   "Renders a menu snippet based on given options and selected
 option. An option may be a dotted pair of a label and URL to link to,
@@ -16,7 +16,6 @@ humanize-name and attributize-name, respectively). The selected-pane
 will be compared to an option's URL tokens via equalp.  If
 CONTAINER-ID is provided, it is used as the basis of DOM IDs for the
 menu and each menu item generated with `unattributized-name'."
-  (declare (special *current-navigation-url*))
   (with-html
     (:div :class "rendered-menu"
 	  :id (unattributized-name container-id 'menu)
@@ -46,13 +45,12 @@ menu and each menu item generated with `unattributized-name'."
                                     (string
                                       (if pane-selected-p
                                         (htm (:span (str label)))
-                                        (htm (:a :href (make-webapp-uri
-                                                         (string-left-trim
-                                                           "/" (concatenate 'string
-                                                                            (string-right-trim "/" *current-navigation-url*)
-                                                                            "/"
-                                                                            (string-left-trim "/" target))))
-                                                 (str label)))))
+                                        (htm (:a :href
+						 (concatenate 'string
+							      (string-right-trim "/" base)
+							      "/"
+							      (string-left-trim "/" target))
+						 (str label)))))
                                     (function
                                       (render-link target label)))))))
 			options))))))))
