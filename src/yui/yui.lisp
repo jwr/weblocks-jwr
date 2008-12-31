@@ -158,3 +158,68 @@ its subclasses."))
 		   (render-widget (second (composite-widgets obj))))))))
 
 
+(export '(yui-mixin yui-widget-variable))
+
+(defclass yui-mixin ()
+  ((widget-variable :accessor yui-widget-variable
+                    :documentation "Global JavaScript variable that will
+                    hold the YUI widget."))
+  (:documentation "A mixin used for YUI widgets that need a
+  corresponding javascript variable."))
+
+(defmethod initialize-instance :after ((w yui-mixin) &rest args)
+  (declare (ignore args))
+  (setf (yui-widget-variable w) (ps-gensym "$yui_widget")))
+
+
+(export '(yui-tabview yui-tabview-tab-labels yui-tabview-selected-tab yui-tabview-tabs))
+
+(defwidget yui-tabview (yui-mixin composite)
+  ((tab-labels :accessor yui-tabview-tab-labels
+	       :initarg :tab-labels
+	       :initform nil
+	       :documentation "A list of strings containing tab labels.")
+   (selected-tab :accessor yui-tabview-selected-tab
+		 :initarg :selected-tab
+		 :initform nil
+		 :documentation "A string containing the label of the
+		 tab that is to be initially selected. Will be compared
+		 with tab-labels using EQUAL.")
+   (tabs :accessor yui-tabview-tabs
+	 :initarg :tabs
+	 :initform nil
+	 :documentation "A list of widgets, one for each tab,
+	 corresponding to tab labels."))
+  (:documentation "Implements the YUI TabView widget."))
+
+(defmethod initialize-instance :after ((obj yui-tabview) &rest initargs)
+  (declare (ignore initargs))
+  ;; this will set HTML id for us
+  (setf (dom-class obj) "yui-navset")
+  (setf (widget-children obj) (yui-tabview-tabs obj)))
+
+(defmethod (setf yui-tabview-tabs) ((obj yui-tabview) tab-list)
+  (setf (slot-value obj 'tabs) tab-list)
+  (setf (widget-children obj) (yui-tabview-tabs obj)))
+
+(defun tabview-script (tabview-js-var tabview-id)
+  (ps* `(with-lazy-loaded-modules (("tabview"))
+	  (setf ,tabview-js-var (new (*YAHOO*.widget.*tab-view ,tabview-id))))))
+
+(defmethod render-widget-body ((obj yui-tabview) &rest args)
+  (declare (ignore args))
+  (send-script (tabview-script (yui-widget-variable obj) (dom-id obj)))
+  (let ((tab-counter 0))
+    (with-html
+      (:ul :class "yui-nav"
+	   (mapc (lambda (label)
+		   (incf tab-counter)
+		   (htm (:li :class (when (equal (yui-tabview-selected-tab obj) label)
+				      "selected")
+			 (:a :href (format nil "#tab~D" tab-counter)
+			     (:em (str label))))))
+		 (yui-tabview-tab-labels obj)))
+      (:div :class "yui-content"
+	    (mapc (lambda (tab)
+		    (htm (:div (:p (render-widget tab)))))
+		  (yui-tabview-tabs obj))))))
