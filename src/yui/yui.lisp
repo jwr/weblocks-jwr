@@ -221,5 +221,5 @@ its subclasses."))
 		 (yui-tabview-tab-labels obj)))
       (:div :class "yui-content"
 	    (mapc (lambda (tab)
-		    (htm (:div (:p (render-widget tab)))))
+		    (htm (:div (render-widget tab))))
 		  (yui-tabview-tabs obj))))))
