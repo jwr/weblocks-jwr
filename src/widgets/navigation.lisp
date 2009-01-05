@@ -55,11 +55,13 @@ may be NIL in which case the default pane name is provided."
      :empty-message "No navigation entries")))
 
 (defmethod render-widget-body ((obj navigation) &rest args)
-  (apply #'render-navigation-menu obj args)
+  (apply #'render-navigation-menu obj args))
+
+(defmethod render-widget-children ((obj navigation) &rest args)
   (when (navigation-render-content obj)
     (with-html 
       (:div :class "navigation-body"
-	    (mapc #'render-widget (widget-children obj))))))
+	    (mapc (lambda (obj) (apply #'render-widget obj args)) (widget-children obj))))))
 
 (defmethod per-class-dependencies append ((obj navigation))
   (list (make-local-dependency :stylesheet "menu")))

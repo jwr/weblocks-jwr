@@ -1,6 +1,6 @@
 (in-package :weblocks)
 
-(export '(template-block-mixin template-block-source template-block-vars recreate-template-printer))
+(export '(template-block-mixin template-block-source template-block-vars recreate-template-printer render-template))
 
 (defclass template-block-mixin ()
   ((template-printer :accessor template-printer-of :initform nil)
@@ -22,8 +22,7 @@ HTML-TEMPLATE using 'vars'."))
       t
       (recreate-template-printer obj)))
 
-(defmethod render-widget-body ((obj template-block-mixin) &rest args)
-  (declare (ignore args))
+(defmethod render-template ((obj template-block-mixin))
   (when (ensure-printer-exists obj)
     (html-template:fill-and-print-template (template-printer-of obj)
 					   (template-block-vars obj)
