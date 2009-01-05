@@ -99,7 +99,7 @@ its subclasses."))
 	  yui-grid-page-primary-body yui-grid-page-secondary-body yui-grid-page-footer
 	  yui-grid-layout yui-grid-first))
 
-(defwidget yui-grid-page (composite)
+(defwidget yui-grid-page ()
   ((header :accessor yui-grid-page-header :initarg :header)
    (primary-body :accessor yui-grid-page-primary-body :initarg :primary-body)
    (secondary-body :accessor yui-grid-page-secondary-body :initarg :secondary-body)
@@ -113,15 +113,11 @@ its subclasses."))
 				       &allow-other-keys)
   (declare (ignore initargs))
   ;; we don't actually use this list for rendering, but it is necessary
-  ;; for a lot of things, for example weblocks can't find navigation
-  ;; widgets without it --jwr
-
-  ;; Updated 20081025: this shouldn't be necessary anymore with the new
-  ;; navigation system --jwr
-  (setf (composite-widgets obj) (list (yui-grid-page-header obj)
-				      (yui-grid-page-primary-body obj)
-				      (yui-grid-page-secondary-body obj)
-				      (yui-grid-page-footer obj)))
+  ;; to keep the weblocks widget tree consistent --jwr
+  (setf (widget-children obj) (list (yui-grid-page-header obj)
+				    (yui-grid-page-primary-body obj)
+				    (yui-grid-page-secondary-body obj)
+				    (yui-grid-page-footer obj)))
   ;; this will set HTML id for us
   (setf (widget-name obj) type)
   (setf (dom-class obj) template))
@@ -136,9 +132,13 @@ its subclasses."))
 	  (:div :class "yui-b" (render-widget (yui-grid-page-secondary-body obj))))
     (:div :id "ft" (render-widget (yui-grid-page-footer obj)))))
 
+(defmethod render-widget-children ((obj yui-grid-page) &rest args)
+  "For yui-grid-page, render-widget-body does all the work"
+  (declare (ignore args)))
+
 
 ;; TODO: implement various layout types
-(defwidget yui-grid-layout (composite)
+(defwidget yui-grid-layout ()
   ((first :accessor yui-grid-first :initarg :first :initform nil)))
 
 (defmethod initialize-instance :after ((obj yui-grid-layout) &rest initargs)
@@ -148,15 +148,18 @@ its subclasses."))
 (defmethod render-widget-body ((obj yui-grid-layout) &rest args)
   (declare (ignore args))
   (with-html
-    (if (eq 'yui-grid-layout (class-of (first (composite-widgets obj))))
-	(render-widget (first (composite-widgets obj)))
+    (if (eq 'yui-grid-layout (class-of (first (widget-children obj))))
+	(render-widget (first (widget-children obj)))
 	(htm (:div :class "yui-u first"
-		   (render-widget (first (composite-widgets obj))))))
-    (if (eq 'yui-grid-layout (class-of (second (composite-widgets obj))))
-	(render-widget (second (composite-widgets obj)))
+		   (render-widget (first (widget-children obj))))))
+    (if (eq 'yui-grid-layout (class-of (second (widget-children obj))))
+	(render-widget (second (widget-children obj)))
 	(htm (:div :class "yui-u"
-		   (render-widget (second (composite-widgets obj))))))))
+		   (render-widget (second (widget-children obj))))))))
 
+(defmethod render-widget-children ((obj yui-grid-layout) &rest args)
+  "For yui-grid-layout, render-widget-body does all the work"
+  (declare (ignore args)))
 
 (export '(yui-mixin yui-widget-variable))
 
@@ -174,7 +177,7 @@ its subclasses."))
 
 (export '(yui-tabview yui-tabview-tab-labels yui-tabview-selected-tab yui-tabview-tabs))
 
-(defwidget yui-tabview (yui-mixin composite)
+(defwidget yui-tabview (yui-mixin widget)
   ((tab-labels :accessor yui-tabview-tab-labels
 	       :initarg :tab-labels
 	       :initform nil
@@ -218,8 +221,10 @@ its subclasses."))
 				      "selected")
 			 (:a :href (format nil "#tab~D" tab-counter)
 			     (:em (str label))))))
-		 (yui-tabview-tab-labels obj)))
-      (:div :class "yui-content"
-	    (mapc (lambda (tab)
-		    (htm (:div (render-widget tab))))
-		  (yui-tabview-tabs obj))))))
+		 (yui-tabview-tab-labels obj))))))
+
+(defmethod render-widget-children ((obj yui-tabview) &rest args)
+  (with-html (:div :class "yui-content"
+		   (mapc (lambda (tab)
+			   (htm (:div (render-widget tab))))
+			 (yui-tabview-tabs obj)))))
