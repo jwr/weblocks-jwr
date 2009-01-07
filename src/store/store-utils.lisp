@@ -71,11 +71,11 @@ persist objects. Default implementation returns *default-store*."))
   (type nil :type symbol)
   (args nil))
 
-(defparameter *stores* (make-hash-table)
+(defvar *stores* (make-hash-table)
   "A hashmap of stores, where each item has store name as key, and
 structure of type 'store-info' as value.")
 
-(defparameter *store-names* nil
+(defvar *store-names* nil
   "A list of store names in the order in which they were defined.")
 
 (defmacro defstore (name type &rest args)
@@ -91,7 +91,7 @@ is called."
 	     (make-store-info :type ,type :args ,(cons 'list args)))
        (unless (find ',name *store-names*)
 	 (push-end ',name *store-names*))
-       (defparameter ,name nil)
+       (defvar ,name nil)
        (let ((,system-name ',(make-symbol (concatenate 'string "WEBLOCKS-" (symbol-name type)))))
 	 (unless (asdf:find-system ,system-name nil)
 	   (load (merge-pathnames (make-pathname :directory '(:relative "src" "store"

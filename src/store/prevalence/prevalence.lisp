@@ -105,18 +105,25 @@
       obj)))
 
 (defmethod find-persistent-objects ((store prevalence-system) class-name 
-				    &key (filter nil) order-by range slot (value nil value-given))
+				    &key (filter nil) order-by range slot
+                                         (value nil value-given)
+                                         (test #'equal))
   "The slot and value keys must appear together.  If they appear, a
 filter will be applied (before the filter passed, if any) that
 requires all objects to have the given value in the given slot."
-;  (break "~A ~A ~A" filter order-by range)
   (range-objects-in-memory
    (order-objects-in-memory
     (let* ((seq (query store 'tx-find-persistent-objects-prevalence class-name))
 	   (seq2 (cond
 		   ((and seq slot value-given)
 		    (remove-if-not
-		      #'(lambda (x) (equal (slot-value x slot) value))
+		      (lambda (obj)
+                        (cond
+                          ((not (slot-exists-p obj slot))
+                           (warn "FIND-PERSISTENT-OBJECTS: object ~A doesn't have the slot ~A" obj slot))
+                          ((not (slot-boundp obj slot))
+                           (warn "FIND-PERSISTENT-OBJECTS: slot ~A of object ~A is not bound" obj slot))
+                          (t (funcall test (slot-value obj slot) value))))
 		      seq))
 		   (t seq)))
 	   (seq3 (cond
