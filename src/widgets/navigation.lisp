@@ -60,8 +60,8 @@ may be NIL in which case the default pane name is provided."
 (defmethod render-widget-children ((obj navigation) &rest args)
   (when (navigation-render-content obj)
     (with-html 
-      (:div :class "navigation-body"
-	    (mapc (lambda (obj) (apply #'render-widget obj args)) (widget-children obj))))))
+      (mapc (lambda (obj) (apply #'render-widget obj args))
+	    (get-children-of-type obj :selector)))))
 
 (defmethod per-class-dependencies append ((obj navigation))
   (list (make-local-dependency :stylesheet "menu")))
@@ -103,7 +103,6 @@ The navigation widgets bears the title NAME."
    widget from the source.")))
 
 (defmethod render-widget-body ((obj teleport) &rest args)
-  (declare (ignore args))
-  (render-widget (funcall (teleport-key obj) (teleport-source obj))))
+  (apply #'render-widget (funcall (teleport-key obj) (teleport-source obj)) args))
 
 
