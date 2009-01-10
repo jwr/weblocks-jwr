@@ -97,7 +97,7 @@ its subclasses."))
 
 (export '(yui-grid-page yui-grid-page-type yui-grid-page-template yui-grid-page-header
 	  yui-grid-page-primary-body yui-grid-page-secondary-body yui-grid-page-footer
-	  yui-grid-layout yui-grid-first))
+	  yui-grid-layout yui-grid-first yui-grid-left yui-grid-right))
 
 (defwidget yui-grid-page ()
   ((header :accessor yui-grid-page-header :initarg :header)
@@ -114,10 +114,11 @@ its subclasses."))
   (declare (ignore initargs))
   ;; we don't actually use this list for rendering, but it is necessary
   ;; to keep the weblocks widget tree consistent --jwr
-  (setf (widget-children obj) (list (yui-grid-page-header obj)
-				    (yui-grid-page-primary-body obj)
-				    (yui-grid-page-secondary-body obj)
-				    (yui-grid-page-footer obj)))
+  (set-children-of-type obj (list (yui-grid-page-header obj)
+				  (yui-grid-page-primary-body obj)
+				  (yui-grid-page-secondary-body obj)
+				  (yui-grid-page-footer obj))
+			:yui-grid-page)
   ;; this will set HTML id for us
   (setf (widget-name obj) type)
   (setf (dom-class obj) template))
@@ -139,27 +140,30 @@ its subclasses."))
 
 ;; TODO: implement various layout types
 (defwidget yui-grid-layout ()
-  ((first :accessor yui-grid-first :initarg :first :initform nil)))
+  ((first :accessor yui-grid-first :initarg :first :initform nil)
+   (left :accessor yui-grid-left :initarg :left :initform nil)
+   (right :accessor yui-grid-right :initarg :right :initform nil)))
 
 (defmethod initialize-instance :after ((obj yui-grid-layout) &rest initargs)
   (declare (ignore initargs))
   (setf (dom-class obj) (format nil "yui-g~:[~; first~]" (yui-grid-first obj))))
 
+(defmethod update-children ((obj yui-grid-layout))
+  (set-children-of-type obj (list (yui-grid-left obj) (yui-grid-right obj)) :yui-grid-layout))
+
 (defmethod render-widget-body ((obj yui-grid-layout) &rest args)
   (declare (ignore args))
-  (with-html
-    (if (eq 'yui-grid-layout (class-of (first (widget-children obj))))
-	(render-widget (first (widget-children obj)))
-	(htm (:div :class "yui-u first"
-		   (render-widget (first (widget-children obj))))))
-    (if (eq 'yui-grid-layout (class-of (second (widget-children obj))))
-	(render-widget (second (widget-children obj)))
-	(htm (:div :class "yui-u"
-		   (render-widget (second (widget-children obj))))))))
+  (with-accessors ((left yui-grid-left) (right yui-grid-right)) obj
+    (with-html
+      (if (eq 'yui-grid-layout (class-of left))
+	  (render-widget left)
+	  (htm (:div :class "yui-u first"
+		     (render-widget left))))
+      (if (eq 'yui-grid-layout (class-of right))
+	  (render-widget right)
+	  (htm (:div :class "yui-u"
+		     (render-widget right)))))))
 
-(defmethod render-widget-children ((obj yui-grid-layout) &rest args)
-  "For yui-grid-layout, render-widget-body does all the work"
-  (declare (ignore args)))
 
 (export '(yui-mixin yui-widget-variable))
 
@@ -199,11 +203,11 @@ its subclasses."))
   (declare (ignore initargs))
   ;; this will set HTML id for us
   (setf (dom-class obj) "yui-navset")
-  (setf (widget-children obj) (yui-tabview-tabs obj)))
+  (set-children-of-type obj (yui-tabview-tabs obj) :yui-tabview))
 
 (defmethod (setf yui-tabview-tabs) ((obj yui-tabview) tab-list)
   (setf (slot-value obj 'tabs) tab-list)
-  (setf (widget-children obj) (yui-tabview-tabs obj)))
+  (set-children-of-type obj (yui-tabview-tabs obj) :yui-tabview))
 
 (defun tabview-script (tabview-js-var tabview-id)
   (ps* `(with-lazy-loaded-modules (("tabview"))
@@ -226,5 +230,5 @@ its subclasses."))
 (defmethod render-widget-children ((obj yui-tabview) &rest args)
   (with-html (:div :class "yui-content"
 		   (mapc (lambda (tab)
-			   (htm (:div (render-widget tab))))
+			   (htm (:div (apply #'render-widget tab args))))
 			 (yui-tabview-tabs obj)))))
