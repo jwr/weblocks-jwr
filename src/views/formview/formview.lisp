@@ -267,6 +267,7 @@ differently.
 	       (:h1 (fmt (view-caption view)
 			 (humanize-name (object-class-name obj))))
 	       (render-validation-summary view obj widget validation-errors)
+	       (:h2 :class "form-fields-title" "Form fields:")
 	       (safe-apply fields-prefix-fn view obj args)
 	       (:ul (apply body-fn view obj args))
 	       (safe-apply fields-suffix-fn view obj args)
@@ -296,7 +297,8 @@ differently.
 		   (:span :class "slot-name"
 			  (:span :class "extra"
 				 (unless (empty-p (view-field-label field))
-				   (str (view-field-label field)) ":&nbsp;")
+				   (str (view-field-label field))
+				   (str ":&nbsp;"))
 				 (when (form-view-field-required-p field)
 				   (htm (:em :class "required-slot" "(required)&nbsp;")))))
 		   (apply #'render-view-field-value
