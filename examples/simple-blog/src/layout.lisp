@@ -1,4 +1,4 @@
-(in-package :simple-blog)
+(in-package :blog)
 
 (defun make-users-gridedit ()
   (make-instance 'gridedit
