@@ -1,4 +1,4 @@
-(in-package :simple-blog)
+(in-package :blog)
 
 (defview user-table-view (:type table :inherit-from '(:scaffold user)))
 (defview user-data-view (:type data :inherit-from '(:scaffold user)))
