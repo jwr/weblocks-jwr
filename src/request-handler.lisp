@@ -79,7 +79,7 @@ customize behavior)."))
 	  (redirect (remove-session-from-uri (request-uri*)))))
 
       (let ((*weblocks-output-stream* (make-string-output-stream))
-	    (*uri-tokens* (make-instance 'uri-tokens :all-tokens (tokenize-uri (request-uri))))
+	    (*uri-tokens* (make-instance 'uri-tokens :all-tokens (tokenize-uri (request-uri*))))
 	    *dirty-widgets*
 	    *before-ajax-complete-scripts* *on-ajax-complete-scripts*
 	    *page-dependencies* *current-page-description*
