@@ -315,7 +315,7 @@ form-view-buttons for a given view.")
 	 (validation-error (assoc field validation-errors))
 	 (field-class (concatenate 'string attribute-slot-name
 				   (when validation-error " item-not-validated")))
-         (*presentation-dom-id* (gen-id)))
+	 (*presentation-dom-id* (gen-id)))
     (with-html
       (:li :class field-class
 	   (:label :class (attributize-presentation

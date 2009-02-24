@@ -35,12 +35,14 @@
 			:depends-on ("weblocks"))
 		 (:file "debug-mode"
 			:depends-on ("weblocks" "actions"))
+		 (:file "uri-tokens"
+			:depends-on ("weblocks"))
 		 (:file "request-hooks"
 			:depends-on ("weblocks"))
 		 (:file "request-handler"
 			:depends-on (utils "weblocks" "page-template" "debug-mode"
 					   "actions" "request-hooks" "application"
-					   "request" "dependencies" store))
+					   "request" "dependencies" "uri-tokens" store))
 		 (:module snippets
 			  :components ((:file "suggest")
 				       (:file "menu")
@@ -122,6 +124,8 @@
 							     (:file "widget-mop")))
 				       (:file "flash"
 					      :depends-on (widget))
+				       (:file "template-block"
+					      :depends-on (widget))
 				       (:file "data-editor"
 					      :depends-on (widget))
 				       (:file "dataform"
@@ -156,18 +160,14 @@
 					      :depends-on (widget "dataseq"))
 				       (:file "pagination"
 					      :depends-on (widget "flash"))
-				       (:file "composite"
-					      :depends-on (widget))
-                                       (:file "table-composite"
-					      :depends-on (composite))
-				       (:file "dispatcher"
-					      :depends-on (widget))
-				       (:file "selector-mixin"
-					      :depends-on (widget))
 				       (:file "selector"
-					      :depends-on ("dispatcher" "selector-mixin" widget))
+					      :depends-on (widget))
+				       (:file "on-demand-selector"
+					      :depends-on ("selector"))
 				       (:file "navigation"
-					      :depends-on ("composite" "selector" widget)))
+					      :depends-on ("selector" widget))
+				       (:file "breadcrumbs"
+					      :depends-on ("navigation")))
 			  :depends-on (snippets views utils "dependencies" "actions" "server" "request"
 						"request-hooks" "dom-object" linguistic store))
 		 (:module control-flow

@@ -1,40 +1,101 @@
 
 (in-package :weblocks)
 
-(export '(selector selector-on-dispatch))
+(export '(selector get-widget-for-tokens selector-base-uri
+	  static-selector select-pane static-selector-panes static-selector-current-pane
+	  http-not-found))
 
-(defwidget selector (dispatcher selector-mixin)
-  ((on-dispatch :initform 'selector-on-dispatch)
-   (widgets-ephemeral-p :initform nil))
-  (:documentation "A selector is a convinience widget based on the
-  dispatcher widget and selector-mixin interface. It allows setting a
-  list of widgets declaratively. Every time the selector is rendered,
-  it dispatches to one of these widgets based on the URL. When the
-  list of widgets is known, selector makes implementing 'on-dispatch'
-  unnecessary. Note that the panes are searched in the order in which
-  they were declared. If there are panes with multiple tokens and
-  panes with single tokens that share the first token name, be sure to
-  place panes with multiple tokens first."))
+(define-condition http-not-found (condition) ())
 
-(defgeneric selector-on-dispatch (obj tokens)
-  (:documentation "This function implements dispatcher's 'on-dispatch'
-  for the selector. It selects from one of the widgets exposed by
-  selector-mixin.")
-  (:method ((obj selector) tokens)
-    (let* ((pane (if tokens
-		     (selector-mixin-find-pane-by-tokens obj tokens)
-		     (selector-mixin-canonicalize-pane (selector-mixin-default-pane obj))))
-	   (pane-tokens (and pane (ensure-list (pane-info-uri-tokens (car pane))))))
-      (if pane
-	  (progn
-	    (setf (selector-mixin-current-pane-name obj)
-		  (pane-info-name (car pane)))
-	    (values (cdr pane)
-		    pane-tokens
-		    (safe-subseq tokens (length pane-tokens))))
-	  (progn
-	    (setf (selector-mixin-current-pane-name obj) nil)
-	    nil)))))
+(defwidget selector ()
+  ((base-uri :accessor selector-base-uri
+	     :documentation "The base URI for this selector, set during
+	     the tree shakedown phase, before rendering. Used during
+	     rendering to compute URL paths."))
+  (:documentation "A selector is a widget within the tree that has a
+  relation with URIs."))
 
-(defmethod find-widget-by-path* (path (self selector))
-  (call-next-method (mapcar #'attributize-name path) self))
+(defgeneric get-widget-for-tokens (selector uri-tokens)
+  (:documentation "Given a list of uri-tokens, map them to a widget. All
+  selectors implement this method. There can be multiple strategies for
+  mapping uri-tokens to widgets: static maps, dynamically-generated
+  widgets, dynamically-generated widgets with caching. Returns a widget
+  or NIL if not found, modifies uri-tokens.
+
+  The whole tree update protocol goes like this:
+
+  1) handle-normal-request calls update-widget-tree, which walks the
+  tree using walk-widget-tree starting at root-widget and calling
+  update-children at every node.
+
+  2) selector's update-children method (valid for all selectors,
+  e.g. widgets that process uri-tokens) calls get-widget-for-tokens.
+
+  3) if a widget corresponding to particular uri-tokens is found,
+  update-children calls update-dependents, so that the selector (or its
+  subclass) may update its dependents list and do other
+  housekeeping. The default implementation of update-dependents just
+  calls set-children-of-type to store the children under the :selector
+  type.
+
+  Usually the only thing you'll want to do if you are implementing your
+  own kind of selector is to subclass selector and provide a
+  get-widget-for-tokens method for it. See 'on-demand-selector' for an
+  example."))
+
+(defgeneric update-dependents (selector children)
+  (:documentation "Update the dependents for a given selector with
+  children. A selector will usually contain the children, but there
+  might be selectors that have other widgets dependent on them and need
+  to do additional housekeeping. Children is either a list of widgets or
+  a widget. Note that we do not update the widget-parent relations:
+  those are handled by set-children-of-type.")
+  (:method ((obj selector) children)
+    (set-children-of-type obj children :selector)))
+
+;; Functionality common to all selectors: all selectors process
+;; *uri-tokens* by calling (get-widget-for-tokens) and update
+;; widget-children to point to the selected widget.
+(defmethod update-children ((selector selector))
+  (declare (special *uri-tokens*))
+  (setf (selector-base-uri selector)
+	(make-webapp-uri
+	 (string-left-trim
+	  "/" (string-right-trim
+	       "/" (compose-uri-tokens-to-url (consumed *uri-tokens*))))))
+  (let ((widget (get-widget-for-tokens selector *uri-tokens*)))
+    (if widget
+	(update-dependents selector widget)
+        (assert (signal 'http-not-found)))))
+
+
+(defwidget static-selector (selector)
+  ((panes :accessor static-selector-panes :initarg :panes :initform nil
+	  :documentation "An alist mapping uri-tokens (strings) to
+	  widgets. The default item (widget) should have nil as the
+	  key.")
+   (current-pane :accessor static-selector-current-pane :initform nil
+		 :documentation "The uri-tokens corresponding to the
+		 currently selected pane, or an empty string if the
+		 default pane is selected."))
+  (:documentation "A static-selector implements a static mapping from a
+  single uri-token to a list of widgets, where only one widget can be
+  selected at any given time. This forms the base for most static
+  navigation systems."))
+
+(defmethod get-widget-for-tokens ((selector static-selector) uri-tokens)
+  ;; we peek at the token first, because if it isn't found we won't
+  ;; consume it, to give others a chance to process it
+  (let* ((token (peek-at-token uri-tokens))
+	 (pane (assoc token (static-selector-panes selector) :test #'equalp)))
+    (when pane
+      (select-pane selector (first (get-tokens uri-tokens)))
+      (cdr pane))))
+
+(defgeneric select-pane (selector token)
+  (:documentation "Called by get-widget-for-tokens when a pane is found
+   and selected. Subclasses may use this method to maintain information
+   about what is currently selected.")
+  (:method ((obj static-selector) token)
+    (setf (static-selector-current-pane obj) token)))
+
