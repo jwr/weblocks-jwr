@@ -58,6 +58,12 @@ at different points before and after request. See 'request-hook'.
 Override this method (along with :before and :after specifiers) to
 customize behavior."))
 
+(defmethod handle-client-request :around (app)
+  (handler-bind ((error (lambda (c)
+                          (return-from handle-client-request
+                                       (handle-error-condition app c)))))
+    (call-next-method)))
+
 (defmethod handle-client-request ((app weblocks-webapp))
   (let ((*current-webapp* app))
     (declare (special *current-webapp*))
@@ -116,7 +122,9 @@ customize behavior."))
         (eval-hook :post-render)
 	(unless (ajax-request-p)
 	  (setf (webapp-session-value 'last-request-uri) (all-tokens *uri-tokens*)))
-	(get-output-stream-string *weblocks-output-stream*)))))
+        (if (member (return-code*) *approved-return-codes*)
+          (get-output-stream-string *weblocks-output-stream*)
+          (handle-http-error app (return-code*)))))))
 
 (defmethod handle-ajax-request ((app weblocks-webapp))
   (declare (special *weblocks-output-stream* *dirty-widgets*
